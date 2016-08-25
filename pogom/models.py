@@ -20,6 +20,7 @@ from . import config
 from .utils import get_pokemon_name, get_pokemon_rarity, get_pokemon_types, get_args
 from .transform import transform_from_wgs_to_gcj, get_new_coords, generate_location_steps
 from .customLog import printPokemon
+from .social_handler import emitPokemon
 
 log = logging.getLogger(__name__)
 
@@ -414,6 +415,14 @@ def parse_map(args, map_dict, step_location, db_update_queue, wh_update_queue):
                     # Set a value of 15 minutes because currently its unknown but larger than 15.
                     d_t = datetime.utcfromtimestamp((p['last_modified_timestamp_ms'] + 900000) / 1000.0)
 
+                emitPokemon({
+                    'encounter_id': b64encode(str(p['encounter_id'])),
+                    'pokemon_id': p['pokemon_data']['pokemon_id'],
+                    'latitude': p['latitude'],
+                    'longitude': p['longitude'],
+                    'expiration_timestamp_ms': d_t.strftime("%Y-%m-%d %H:%M:%S"),
+                    'pokemon_name': get_pokemon_name(p['pokemon_data']['pokemon_id'])
+                })
                 printPokemon(p['pokemon_data']['pokemon_id'], p['latitude'],
                              p['longitude'], d_t)
                 pokemons[p['encounter_id']] = {
